@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { FiMic, FiMicOff, FiPhone, FiPhoneOff, FiMessageSquare, FiSettings, FiUsers, FiTrendingUp, FiDollarSign, FiTarget, FiDownload, FiSearch, FiRefreshCw, FiChevronLeft, FiChevronRight, FiArrowUp, FiArrowDown, FiMail, FiUser, FiBriefcase, FiCalendar, FiList, FiInfo, FiCheckCircle, FiAlertCircle } from 'react-icons/fi'
+import { FiMic, FiMicOff, FiPhone, FiPhoneOff, FiMessageSquare, FiSettings, FiUsers, FiTrendingUp, FiDollarSign, FiTarget, FiDownload, FiSearch, FiRefreshCw, FiChevronLeft, FiChevronRight, FiArrowUp, FiArrowDown, FiMail, FiUser, FiBriefcase, FiCalendar, FiList, FiInfo, FiCheckCircle, FiAlertCircle, FiExternalLink } from 'react-icons/fi'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -26,6 +26,24 @@ import { format } from 'date-fns'
 // ─── Constants ────────────────────────────────────────────────────────────────
 const AGENT_ID = '699943f2a3f97c34732baeba'
 const VOICE_SESSION_URL = 'https://voice-sip.studio.lyzr.ai/session/start'
+const BOOKING_URL = 'https://calendly.com' // Replace with your actual booking/consultation URL
+
+// Keywords that signal the agent wants to redirect to booking
+const REDIRECT_KEYWORDS = [
+  'redirecting you now',
+  'redirect you now',
+  'redirecting you to',
+  'schedule a consultation',
+  'schedule a quick strategy',
+  'booking page',
+  'book a consultation',
+  'next step is to schedule',
+]
+
+function containsRedirectIntent(text: string): boolean {
+  const lower = text.toLowerCase()
+  return REDIRECT_KEYWORDS.some((kw) => lower.includes(kw))
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface VoiceSession {
@@ -233,33 +251,33 @@ function VoiceOrb({
     switch (state) {
       case 'idle':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(160, 50%, 25%), hsl(160, 40%, 10%))',
-          boxShadow: '0 0 40px hsla(160, 70%, 40%, 0.15), 0 0 80px hsla(160, 70%, 40%, 0.05)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(220, 60%, 55%), hsl(220, 70%, 40%))',
+          boxShadow: '0 0 40px hsla(220, 70%, 50%, 0.2), 0 0 80px hsla(220, 70%, 50%, 0.08)',
         }
       case 'connecting':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(160, 55%, 30%), hsl(160, 40%, 12%))',
-          boxShadow: '0 0 50px hsla(160, 70%, 40%, 0.25), 0 0 100px hsla(160, 70%, 40%, 0.1)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(220, 65%, 58%), hsl(220, 70%, 42%))',
+          boxShadow: '0 0 50px hsla(220, 70%, 50%, 0.3), 0 0 100px hsla(220, 70%, 50%, 0.12)',
         }
       case 'listening':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(160, 65%, 35%), hsl(160, 50%, 15%))',
-          boxShadow: '0 0 60px hsla(160, 70%, 40%, 0.35), 0 0 120px hsla(160, 70%, 40%, 0.15)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(220, 70%, 60%), hsl(220, 75%, 45%))',
+          boxShadow: '0 0 60px hsla(220, 70%, 50%, 0.35), 0 0 120px hsla(220, 70%, 50%, 0.15)',
         }
       case 'speaking':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(160, 70%, 40%), hsl(160, 55%, 18%))',
-          boxShadow: '0 0 70px hsla(160, 70%, 40%, 0.4), 0 0 140px hsla(160, 70%, 40%, 0.2)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(220, 75%, 62%), hsl(220, 80%, 48%))',
+          boxShadow: '0 0 70px hsla(220, 70%, 50%, 0.4), 0 0 140px hsla(220, 70%, 50%, 0.2)',
         }
       case 'processing':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(160, 60%, 32%), hsl(160, 45%, 14%))',
-          boxShadow: '0 0 55px hsla(160, 70%, 40%, 0.3), 0 0 110px hsla(160, 70%, 40%, 0.12)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(220, 65%, 57%), hsl(220, 72%, 43%))',
+          boxShadow: '0 0 55px hsla(220, 70%, 50%, 0.3), 0 0 110px hsla(220, 70%, 50%, 0.12)',
         }
       case 'error':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(0, 50%, 30%), hsl(0, 40%, 12%))',
-          boxShadow: '0 0 40px hsla(0, 63%, 31%, 0.3), 0 0 80px hsla(0, 63%, 31%, 0.1)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(0, 65%, 55%), hsl(0, 55%, 40%))',
+          boxShadow: '0 0 40px hsla(0, 72%, 51%, 0.3), 0 0 80px hsla(0, 72%, 51%, 0.1)',
         }
       default:
         return {}
@@ -308,7 +326,7 @@ function VoiceOrb({
           aria-label={state === 'idle' ? 'Start voice session' : 'Voice session active'}
         >
           {/* Inner glow */}
-          <div className="absolute inset-4 rounded-full bg-gradient-to-br from-white/5 to-transparent" />
+          <div className="absolute inset-4 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
 
           {/* Waveform bars inside orb for speaking state */}
           {state === 'speaking' && (
@@ -316,7 +334,7 @@ function VoiceOrb({
               {[...Array(7)].map((_, i) => (
                 <div
                   key={i}
-                  className="w-1 bg-accent/60 rounded-full animate-bounce"
+                  className="w-1 bg-white/70 rounded-full animate-bounce"
                   style={{
                     height: `${20 + Math.random() * 30}%`,
                     animationDelay: `${i * 0.1}s`,
@@ -329,24 +347,24 @@ function VoiceOrb({
 
           {/* Icon */}
           <div className={`relative z-10 ${getPulseClass()}`}>
-            {state === 'idle' && <FiPhone className="w-10 h-10 text-accent" />}
+            {state === 'idle' && <FiPhone className="w-10 h-10 text-white" />}
             {state === 'connecting' && (
-              <FiRefreshCw className="w-10 h-10 text-accent animate-spin" />
+              <FiRefreshCw className="w-10 h-10 text-white animate-spin" />
             )}
             {state === 'listening' && !isMuted && (
-              <FiMic className="w-10 h-10 text-accent" />
+              <FiMic className="w-10 h-10 text-white" />
             )}
             {state === 'listening' && isMuted && (
-              <FiMicOff className="w-10 h-10 text-muted-foreground" />
+              <FiMicOff className="w-10 h-10 text-white/50" />
             )}
             {state === 'speaking' && (
               <div className="w-10 h-10" />
             )}
             {state === 'processing' && (
               <div className="flex gap-1.5 items-center">
-                <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             )}
             {state === 'error' && <FiAlertCircle className="w-10 h-10 text-destructive" />}
@@ -506,6 +524,64 @@ function SilenceCue({ visible }: { visible: boolean }) {
     <div className="flex items-center gap-2 text-muted-foreground text-sm animate-pulse mt-2">
       <FiMic className="w-3.5 h-3.5" />
       <span>Still listening... go ahead and speak</span>
+    </div>
+  )
+}
+
+// ─── Booking Redirect Overlay ─────────────────────────────────────────────────
+function BookingRedirectOverlay({
+  show,
+  countdown,
+  onCancel,
+  onGoNow,
+}: {
+  show: boolean
+  countdown: number
+  onCancel: () => void
+  onGoNow: () => void
+}) {
+  if (!show) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+      <Card className="w-full max-w-md mx-4 shadow-xl border-border">
+        <CardContent className="p-6 text-center space-y-4">
+          <div className="w-14 h-14 mx-auto rounded-full bg-accent/15 flex items-center justify-center">
+            <FiCalendar className="w-7 h-7 text-accent" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold tracking-tight text-foreground">
+              Ready to Book Your Consultation
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+              Based on your requirements, the next step is a quick strategy consultation.
+              Redirecting in <span className="font-bold text-accent">{countdown}</span> seconds...
+            </p>
+          </div>
+          <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+            <div
+              className="h-full bg-accent rounded-full transition-all duration-1000 ease-linear"
+              style={{ width: `${((5 - countdown) / 5) * 100}%` }}
+            />
+          </div>
+          <div className="flex items-center gap-3 pt-1">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={onCancel}
+            >
+              Stay Here
+            </Button>
+            <Button
+              className="flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
+              onClick={onGoNow}
+            >
+              <FiExternalLink className="w-4 h-4" />
+              Book Now
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
@@ -689,10 +765,10 @@ function LeadsTable({
         cell: ({ row }) => {
           const status = row.original.status
           const colors: Record<string, string> = {
-            new: 'bg-accent/20 text-accent border-accent/30',
-            contacted: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-            qualified: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-            converted: 'bg-green-500/20 text-green-400 border-green-500/30',
+            new: 'bg-accent/10 text-accent border-accent/25',
+            contacted: 'bg-blue-500/10 text-blue-600 border-blue-500/25',
+            qualified: 'bg-amber-500/10 text-amber-600 border-amber-500/25',
+            converted: 'bg-green-500/10 text-green-600 border-green-500/25',
           }
           return (
             <Badge variant="outline" className={`text-xs capitalize ${colors[status] ?? ''}`}>
@@ -1054,6 +1130,8 @@ export default function Page() {
   const [showTranscript, setShowTranscript] = useState(false)
   const [notification, setNotification] = useState({ message: '', visible: false })
   const [showSilenceCue, setShowSilenceCue] = useState(false)
+  const [bookingRedirect, setBookingRedirect] = useState<{ show: boolean; countdown: number }>({ show: false, countdown: 5 })
+  const bookingTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // ── WebSocket & Audio Refs ──
   const wsRef = useRef<WebSocket | null>(null)
@@ -1128,6 +1206,54 @@ export default function Page() {
   const clearSilenceTimer = useCallback(() => {
     setShowSilenceCue(false)
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+  }, [])
+
+  // ── Booking Redirect ──
+  const triggerBookingRedirect = useCallback(() => {
+    if (bookingRedirect.show) return // already triggered
+    setBookingRedirect({ show: true, countdown: 5 })
+
+    // Save lead data before redirect
+    if (transcript.length > 2) {
+      const newLead: Lead = {
+        id: generateId(),
+        fullName: 'Voice Visitor',
+        email: '',
+        phone: '',
+        businessType: '',
+        projectType: '',
+        budgetRange: '',
+        timeline: '',
+        features: [],
+        notes: 'Qualified lead - redirected to booking page.',
+        timestamp: new Date().toISOString(),
+        isReturning: false,
+        sourceTag: 'Voice Session',
+        conversationTranscript: transcript,
+        status: 'qualified',
+      }
+      setLeads((prev) => [newLead, ...prev])
+    }
+
+    let count = 5
+    bookingTimerRef.current = setInterval(() => {
+      count -= 1
+      setBookingRedirect((prev) => ({ ...prev, countdown: count }))
+      if (count <= 0) {
+        if (bookingTimerRef.current) clearInterval(bookingTimerRef.current)
+        window.open(BOOKING_URL, '_blank')
+        setBookingRedirect({ show: false, countdown: 5 })
+        // Store returning user info
+        try {
+          localStorage.setItem('elevra-returning-user', JSON.stringify({ lastVisit: new Date().toISOString() }))
+        } catch { /* ignore */ }
+      }
+    }, 1000)
+  }, [bookingRedirect.show, transcript])
+
+  const cancelBookingRedirect = useCallback(() => {
+    if (bookingTimerRef.current) clearInterval(bookingTimerRef.current)
+    setBookingRedirect({ show: false, countdown: 5 })
   }, [])
 
   // ── Audio Playback ──
@@ -1278,6 +1404,13 @@ export default function Page() {
               if (msg.role === 'user') {
                 setVoiceState('listening')
               }
+              // Detect booking redirect intent from assistant
+              if (msg.role === 'assistant' && msg.final !== false && containsRedirectIntent(msg.text)) {
+                // Delay slightly so the user hears the full message
+                setTimeout(() => {
+                  triggerBookingRedirect()
+                }, 2000)
+              }
               setTranscript((prev) => {
                 const now = new Date().toISOString()
                 if (msg.final === false) {
@@ -1339,7 +1472,7 @@ export default function Page() {
     } catch {
       setVoiceState('error')
     }
-  }, [initPlaybackAudio, playAudioChunk, clearPlayback, startMicrophone, stopMicrophone, resetSilenceTimer, clearSilenceTimer])
+  }, [initPlaybackAudio, playAudioChunk, clearPlayback, startMicrophone, stopMicrophone, resetSilenceTimer, clearSilenceTimer, triggerBookingRedirect])
 
   // ── End Voice Session ──
   const endSession = useCallback(() => {
@@ -1383,6 +1516,7 @@ export default function Page() {
       stopMicrophone()
       audioContextRef.current?.close()
       clearSilenceTimer()
+      if (bookingTimerRef.current) clearInterval(bookingTimerRef.current)
     }
   }, [stopMicrophone, clearSilenceTimer])
 
@@ -1432,6 +1566,17 @@ export default function Page() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background text-foreground font-sans relative overflow-hidden">
+        {/* Booking Redirect Overlay */}
+        <BookingRedirectOverlay
+          show={bookingRedirect.show}
+          countdown={bookingRedirect.countdown}
+          onCancel={cancelBookingRedirect}
+          onGoNow={() => {
+            cancelBookingRedirect()
+            window.open(BOOKING_URL, '_blank')
+          }}
+        />
+
         {/* Background gradient effect */}
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
@@ -1569,25 +1714,25 @@ export default function Page() {
                 label="Total Leads"
                 value={stats.total}
                 icon={<FiUsers className="w-5 h-5" />}
-                accentColor="hsl(160, 75%, 50%)"
+                accentColor="hsl(220, 70%, 50%)"
               />
               <StatCard
                 label="This Week"
                 value={stats.thisWeek}
                 icon={<FiTrendingUp className="w-5 h-5" />}
-                accentColor="hsl(142, 65%, 45%)"
+                accentColor="hsl(160, 60%, 45%)"
               />
               <StatCard
                 label="Avg Budget"
                 value={stats.avgBudget > 0 ? `$${stats.avgBudget.toLocaleString()}` : '$0'}
                 icon={<FiDollarSign className="w-5 h-5" />}
-                accentColor="hsl(180, 55%, 50%)"
+                accentColor="hsl(30, 80%, 55%)"
               />
               <StatCard
                 label="Conversion"
                 value={`${stats.conversionRate}%`}
                 icon={<FiTarget className="w-5 h-5" />}
-                accentColor="hsl(120, 50%, 50%)"
+                accentColor="hsl(280, 60%, 55%)"
               />
             </div>
 
