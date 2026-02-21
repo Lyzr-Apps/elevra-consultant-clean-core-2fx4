@@ -26,9 +26,10 @@ import { format } from 'date-fns'
 // ─── Constants ────────────────────────────────────────────────────────────────
 const AGENT_ID = '699943f2a3f97c34732baeba'
 const VOICE_SESSION_URL = 'https://voice-sip.studio.lyzr.ai/session/start'
-const BOOKING_URL = 'https://calendly.com' // Replace with your actual booking/consultation URL
+const BOOKING_URL = 'https://calendly.com'
+const WS_KEEPALIVE_INTERVAL = 15000
+const SILENCE_CUE_DELAY = 10000
 
-// Keywords that signal the agent wants to redirect to booking
 const REDIRECT_KEYWORDS = [
   'redirecting you now',
   'redirect you now',
@@ -251,33 +252,33 @@ function VoiceOrb({
     switch (state) {
       case 'idle':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(220, 60%, 55%), hsl(220, 70%, 40%))',
-          boxShadow: '0 0 40px hsla(220, 70%, 50%, 0.2), 0 0 80px hsla(220, 70%, 50%, 0.08)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(38, 55%, 48%), hsl(30, 40%, 22%))',
+          boxShadow: '0 0 40px hsla(38, 65%, 52%, 0.15), 0 0 80px hsla(38, 65%, 52%, 0.06), inset 0 0 30px hsla(38, 50%, 40%, 0.2)',
         }
       case 'connecting':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(220, 65%, 58%), hsl(220, 70%, 42%))',
-          boxShadow: '0 0 50px hsla(220, 70%, 50%, 0.3), 0 0 100px hsla(220, 70%, 50%, 0.12)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(38, 60%, 52%), hsl(30, 45%, 25%))',
+          boxShadow: '0 0 50px hsla(38, 65%, 52%, 0.25), 0 0 100px hsla(38, 65%, 52%, 0.1)',
         }
       case 'listening':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(220, 70%, 60%), hsl(220, 75%, 45%))',
-          boxShadow: '0 0 60px hsla(220, 70%, 50%, 0.35), 0 0 120px hsla(220, 70%, 50%, 0.15)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(38, 65%, 55%), hsl(30, 50%, 28%))',
+          boxShadow: '0 0 60px hsla(38, 65%, 52%, 0.3), 0 0 120px hsla(38, 65%, 52%, 0.12)',
         }
       case 'speaking':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(220, 75%, 62%), hsl(220, 80%, 48%))',
-          boxShadow: '0 0 70px hsla(220, 70%, 50%, 0.4), 0 0 140px hsla(220, 70%, 50%, 0.2)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(38, 70%, 58%), hsl(30, 55%, 32%))',
+          boxShadow: '0 0 70px hsla(38, 65%, 52%, 0.35), 0 0 140px hsla(38, 65%, 52%, 0.18)',
         }
       case 'processing':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(220, 65%, 57%), hsl(220, 72%, 43%))',
-          boxShadow: '0 0 55px hsla(220, 70%, 50%, 0.3), 0 0 110px hsla(220, 70%, 50%, 0.12)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(38, 58%, 50%), hsl(30, 42%, 24%))',
+          boxShadow: '0 0 55px hsla(38, 65%, 52%, 0.25), 0 0 110px hsla(38, 65%, 52%, 0.1)',
         }
       case 'error':
         return {
-          background: 'radial-gradient(circle at 40% 40%, hsl(0, 65%, 55%), hsl(0, 55%, 40%))',
-          boxShadow: '0 0 40px hsla(0, 72%, 51%, 0.3), 0 0 80px hsla(0, 72%, 51%, 0.1)',
+          background: 'radial-gradient(circle at 40% 40%, hsl(0, 50%, 45%), hsl(0, 40%, 25%))',
+          boxShadow: '0 0 40px hsla(0, 55%, 45%, 0.25), 0 0 80px hsla(0, 55%, 45%, 0.08)',
         }
       default:
         return {}
@@ -292,31 +293,26 @@ function VoiceOrb({
 
   return (
     <div className="flex flex-col items-center gap-6">
-      {/* Outer Rings */}
       <div className="relative flex items-center justify-center">
-        {/* Ring 1 - outermost */}
         {(state === 'listening' || state === 'speaking') && (
           <div
-            className="absolute w-72 h-72 md:w-80 md:h-80 rounded-full border border-accent/20 animate-ping"
+            className="absolute w-72 h-72 md:w-80 md:h-80 rounded-full border border-accent/15 animate-ping"
             style={{ animationDuration: '3s' }}
           />
         )}
-        {/* Ring 2 */}
         {(state === 'listening' || state === 'speaking') && (
           <div
-            className="absolute w-64 h-64 md:w-72 md:h-72 rounded-full border border-accent/30 animate-ping"
+            className="absolute w-64 h-64 md:w-72 md:h-72 rounded-full border border-accent/20 animate-ping"
             style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}
           />
         )}
-        {/* Ring 3 - for speaking waveform effect */}
         {state === 'speaking' && (
           <div
-            className="absolute w-56 h-56 md:w-64 md:h-64 rounded-full border-2 border-accent/40 animate-ping"
+            className="absolute w-56 h-56 md:w-64 md:h-64 rounded-full border-2 border-accent/30 animate-ping"
             style={{ animationDuration: '2s', animationDelay: '0.2s' }}
           />
         )}
 
-        {/* Main Orb */}
         <div
           className={orbBaseClasses}
           style={getOrbStyle()}
@@ -325,16 +321,14 @@ function VoiceOrb({
           tabIndex={0}
           aria-label={state === 'idle' ? 'Start voice session' : 'Voice session active'}
         >
-          {/* Inner glow */}
-          <div className="absolute inset-4 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
+          <div className="absolute inset-4 rounded-full bg-gradient-to-br from-white/15 to-transparent" />
 
-          {/* Waveform bars inside orb for speaking state */}
           {state === 'speaking' && (
             <div className="absolute inset-0 flex items-center justify-center gap-1">
               {[...Array(7)].map((_, i) => (
                 <div
                   key={i}
-                  className="w-1 bg-white/70 rounded-full animate-bounce"
+                  className="w-1 bg-white/60 rounded-full animate-bounce"
                   style={{
                     height: `${20 + Math.random() * 30}%`,
                     animationDelay: `${i * 0.1}s`,
@@ -345,7 +339,6 @@ function VoiceOrb({
             </div>
           )}
 
-          {/* Icon */}
           <div className={`relative z-10 ${getPulseClass()}`}>
             {state === 'idle' && <FiPhone className="w-10 h-10 text-white" />}
             {state === 'connecting' && (
@@ -367,12 +360,11 @@ function VoiceOrb({
                 <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             )}
-            {state === 'error' && <FiAlertCircle className="w-10 h-10 text-destructive" />}
+            {state === 'error' && <FiAlertCircle className="w-10 h-10 text-red-300" />}
           </div>
         </div>
       </div>
 
-      {/* Controls */}
       {isActive && (
         <div className="flex items-center gap-3">
           <Button
@@ -543,8 +535,8 @@ function BookingRedirectOverlay({
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <Card className="w-full max-w-md mx-4 shadow-xl border-border">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <Card className="w-full max-w-md mx-4 shadow-2xl border-accent/20 bg-card">
         <CardContent className="p-6 text-center space-y-4">
           <div className="w-14 h-14 mx-auto rounded-full bg-accent/15 flex items-center justify-center">
             <FiCalendar className="w-7 h-7 text-accent" />
@@ -681,6 +673,29 @@ function downloadCSV(leads: Lead[]) {
   URL.revokeObjectURL(url)
 }
 
+// ─── PCM16 Resampling Helper ─────────────────────────────────────────────────
+function resamplePCM16(inputFloat32: Float32Array, inputRate: number, outputRate: number): Int16Array {
+  if (inputRate === outputRate) {
+    const pcm16 = new Int16Array(inputFloat32.length)
+    for (let i = 0; i < inputFloat32.length; i++) {
+      pcm16[i] = Math.max(-1, Math.min(1, inputFloat32[i])) * 32767
+    }
+    return pcm16
+  }
+  const ratio = inputRate / outputRate
+  const outputLength = Math.round(inputFloat32.length / ratio)
+  const pcm16 = new Int16Array(outputLength)
+  for (let i = 0; i < outputLength; i++) {
+    const srcIndex = i * ratio
+    const srcIndexFloor = Math.floor(srcIndex)
+    const srcIndexCeil = Math.min(srcIndexFloor + 1, inputFloat32.length - 1)
+    const frac = srcIndex - srcIndexFloor
+    const sample = inputFloat32[srcIndexFloor] * (1 - frac) + inputFloat32[srcIndexCeil] * frac
+    pcm16[i] = Math.max(-1, Math.min(1, sample)) * 32767
+  }
+  return pcm16
+}
+
 // ─── Leads Table Component ────────────────────────────────────────────────────
 function LeadsTable({
   leads,
@@ -766,9 +781,9 @@ function LeadsTable({
           const status = row.original.status
           const colors: Record<string, string> = {
             new: 'bg-accent/10 text-accent border-accent/25',
-            contacted: 'bg-blue-500/10 text-blue-600 border-blue-500/25',
-            qualified: 'bg-amber-500/10 text-amber-600 border-amber-500/25',
-            converted: 'bg-green-500/10 text-green-600 border-green-500/25',
+            contacted: 'bg-blue-500/10 text-blue-400 border-blue-500/25',
+            qualified: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
+            converted: 'bg-green-500/10 text-green-400 border-green-500/25',
           }
           return (
             <Badge variant="outline" className={`text-xs capitalize ${colors[status] ?? ''}`}>
@@ -808,7 +823,6 @@ function LeadsTable({
 
   return (
     <div className="space-y-4">
-      {/* Search */}
       <div className="relative">
         <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
@@ -819,7 +833,6 @@ function LeadsTable({
         />
       </div>
 
-      {/* Table */}
       <div className="rounded-xl border border-border/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -875,7 +888,6 @@ function LeadsTable({
         </div>
       </div>
 
-      {/* Pagination */}
       {table.getPageCount() > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
@@ -930,7 +942,6 @@ function LeadDetailSheet({
         </SheetHeader>
 
         <div className="space-y-5">
-          {/* Contact Info */}
           <Card className="border-border/50">
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center gap-2 text-sm">
@@ -952,7 +963,6 @@ function LeadDetailSheet({
             </CardContent>
           </Card>
 
-          {/* Project Details */}
           <Card className="border-border/50">
             <CardHeader className="p-4 pb-2">
               <CardTitle className="text-sm font-semibold">Project Details</CardTitle>
@@ -981,7 +991,6 @@ function LeadDetailSheet({
             </CardContent>
           </Card>
 
-          {/* Features */}
           {Array.isArray(lead.features) && lead.features.length > 0 && (
             <Card className="border-border/50">
               <CardHeader className="p-4 pb-2">
@@ -1002,7 +1011,6 @@ function LeadDetailSheet({
             </Card>
           )}
 
-          {/* Notes */}
           {lead.notes && (
             <Card className="border-border/50">
               <CardHeader className="p-4 pb-2">
@@ -1017,7 +1025,6 @@ function LeadDetailSheet({
             </Card>
           )}
 
-          {/* Conversation Transcript */}
           <Card className="border-border/50">
             <CardHeader className="p-4 pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -1135,6 +1142,7 @@ export default function Page() {
 
   // ── WebSocket & Audio Refs ──
   const wsRef = useRef<WebSocket | null>(null)
+  const keepaliveRef = useRef<NodeJS.Timeout | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const gainNodeRef = useRef<GainNode | null>(null)
   const nextPlayTimeRef = useRef(0)
@@ -1143,6 +1151,7 @@ export default function Page() {
   const processorRef = useRef<ScriptProcessorNode | null>(null)
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null)
   const sampleRateRef = useRef(24000)
+  const sessionActiveRef = useRef(false)
 
   // ── Admin State ──
   const [leads, setLeads] = useState<Lead[]>([])
@@ -1200,7 +1209,7 @@ export default function Page() {
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
     silenceTimerRef.current = setTimeout(() => {
       setShowSilenceCue(true)
-    }, 8000)
+    }, SILENCE_CUE_DELAY)
   }, [])
 
   const clearSilenceTimer = useCallback(() => {
@@ -1208,12 +1217,32 @@ export default function Page() {
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
   }, [])
 
+  // ── WebSocket Keepalive ──
+  const startKeepalive = useCallback(() => {
+    if (keepaliveRef.current) clearInterval(keepaliveRef.current)
+    keepaliveRef.current = setInterval(() => {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        try {
+          wsRef.current.send(JSON.stringify({ type: 'ping' }))
+        } catch {
+          // ignore send errors
+        }
+      }
+    }, WS_KEEPALIVE_INTERVAL)
+  }, [])
+
+  const stopKeepalive = useCallback(() => {
+    if (keepaliveRef.current) {
+      clearInterval(keepaliveRef.current)
+      keepaliveRef.current = null
+    }
+  }, [])
+
   // ── Booking Redirect ──
   const triggerBookingRedirect = useCallback(() => {
-    if (bookingRedirect.show) return // already triggered
+    if (bookingRedirect.show) return
     setBookingRedirect({ show: true, countdown: 5 })
 
-    // Save lead data before redirect
     if (transcript.length > 2) {
       const newLead: Lead = {
         id: generateId(),
@@ -1243,7 +1272,6 @@ export default function Page() {
         if (bookingTimerRef.current) clearInterval(bookingTimerRef.current)
         window.open(BOOKING_URL, '_blank')
         setBookingRedirect({ show: false, countdown: 5 })
-        // Store returning user info
         try {
           localStorage.setItem('elevra-returning-user', JSON.stringify({ lastVisit: new Date().toISOString() }))
         } catch { /* ignore */ }
@@ -1256,8 +1284,8 @@ export default function Page() {
     setBookingRedirect({ show: false, countdown: 5 })
   }, [])
 
-  // ── Audio Playback ──
-  const initPlaybackAudio = useCallback((sampleRate: number) => {
+  // ── Audio Playback (with AudioContext.resume() for browser autoplay policy) ──
+  const initPlaybackAudio = useCallback(async (sampleRate: number) => {
     if (!audioContextRef.current) {
       const ctx = new AudioContext({ sampleRate })
       audioContextRef.current = ctx
@@ -1267,11 +1295,25 @@ export default function Page() {
       gainNodeRef.current = gain
       nextPlayTimeRef.current = ctx.currentTime
     }
+    // Resume AudioContext if suspended (critical for auto-greeting playback)
+    if (audioContextRef.current.state === 'suspended') {
+      try {
+        await audioContextRef.current.resume()
+      } catch {
+        // ignore resume errors
+      }
+    }
   }, [])
 
   const playAudioChunk = useCallback((base64Audio: string) => {
     if (!audioContextRef.current || !gainNodeRef.current) return
     const ctx = audioContextRef.current
+
+    // Resume if suspended (user gesture may have unlocked it)
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {})
+    }
+
     try {
       const raw = atob(base64Audio)
       const bytes = new Uint8Array(raw.length)
@@ -1300,27 +1342,29 @@ export default function Page() {
     nextPlayTimeRef.current = audioContextRef.current?.currentTime ?? 0
   }, [])
 
-  // ── Microphone ──
-  const startMicrophone = useCallback((sampleRate: number, sendAudio: (base64: string) => void) => {
+  // ── Microphone (with resampling to match server sampleRate) ──
+  const startMicrophone = useCallback((targetSampleRate: number, sendAudio: (base64: string) => void) => {
     navigator.mediaDevices
       .getUserMedia({
-        audio: { sampleRate, channelCount: 1, echoCancellation: true, noiseSuppression: true },
+        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       })
       .then((stream) => {
         micStreamRef.current = stream
-        const ctx = new AudioContext({ sampleRate })
+        const ctx = new AudioContext()
         micContextRef.current = ctx
+        const actualSampleRate = ctx.sampleRate
         const source = ctx.createMediaStreamSource(stream)
-        const processor = ctx.createScriptProcessor(4096, 1, 1)
+        const processor = ctx.createScriptProcessor(8192, 1, 1)
         processorRef.current = processor
 
         processor.onaudioprocess = (e) => {
           if (isMutedRef.current) return
+          if (!sessionActiveRef.current) return
           const float32 = e.inputBuffer.getChannelData(0)
-          const pcm16 = new Int16Array(float32.length)
-          for (let i = 0; i < float32.length; i++) {
-            pcm16[i] = Math.max(-1, Math.min(1, float32[i])) * 32767
-          }
+
+          // Resample from hardware rate to server target rate
+          const pcm16 = resamplePCM16(float32, actualSampleRate, targetSampleRate)
+
           const bytes = new Uint8Array(pcm16.buffer)
           let binary = ''
           for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
@@ -1328,6 +1372,7 @@ export default function Page() {
         }
 
         source.connect(processor)
+        // Connect through silent gain node to avoid mic echo feedback
         const silentGain = ctx.createGain()
         silentGain.gain.value = 0
         silentGain.connect(ctx.destination)
@@ -1341,7 +1386,7 @@ export default function Page() {
   const stopMicrophone = useCallback(() => {
     processorRef.current?.disconnect()
     micStreamRef.current?.getTracks().forEach((t) => t.stop())
-    micContextRef.current?.close()
+    micContextRef.current?.close().catch(() => {})
     micStreamRef.current = null
     processorRef.current = null
     micContextRef.current = null
@@ -1349,9 +1394,11 @@ export default function Page() {
 
   // ── Start Voice Session ──
   const startSession = useCallback(async () => {
+    if (sessionActiveRef.current) return
     setVoiceState('connecting')
     setTranscript([])
     clearSilenceTimer()
+    sessionActiveRef.current = true
 
     try {
       const res = await fetch(VOICE_SESSION_URL, {
@@ -1366,7 +1413,9 @@ export default function Page() {
       const sampleRate = data?.audioConfig?.sampleRate ?? 24000
       sampleRateRef.current = sampleRate
 
-      initPlaybackAudio(sampleRate)
+      // Initialize playback audio and resume context BEFORE WebSocket connects
+      // This ensures the auto-greeting audio from the agent will play immediately
+      await initPlaybackAudio(sampleRate)
 
       const ws = new WebSocket(data.wsUrl)
       wsRef.current = ws
@@ -1374,16 +1423,21 @@ export default function Page() {
       ws.onopen = () => {
         setVoiceState('listening')
         resetSilenceTimer()
+        startKeepalive()
 
         startMicrophone(sampleRate, (base64: string) => {
           if (ws.readyState === WebSocket.OPEN) {
-            ws.send(
-              JSON.stringify({
-                type: 'audio',
-                audio: base64,
-                sampleRate,
-              })
-            )
+            try {
+              ws.send(
+                JSON.stringify({
+                  type: 'audio',
+                  audio: base64,
+                  sampleRate,
+                })
+              )
+            } catch {
+              // ignore send errors during closing
+            }
           }
         })
       }
@@ -1406,7 +1460,6 @@ export default function Page() {
               }
               // Detect booking redirect intent from assistant
               if (msg.role === 'assistant' && msg.final !== false && containsRedirectIntent(msg.text)) {
-                // Delay slightly so the user hears the full message
                 setTimeout(() => {
                   triggerBookingRedirect()
                 }, 2000)
@@ -1424,7 +1477,6 @@ export default function Page() {
                   }
                   return [...prev, { role: msg.role, text: msg.text, timestamp: now, isFinal: false }]
                 }
-                // Final transcript - replace interim or add new
                 const interimIndex = prev.findIndex(
                   (m) => m.role === msg.role && !m.isFinal
                 )
@@ -1458,24 +1510,40 @@ export default function Page() {
         }
       }
 
-      ws.onclose = () => {
-        setVoiceState('idle')
-        stopMicrophone()
-        clearSilenceTimer()
+      ws.onclose = (event) => {
+        stopKeepalive()
+        // Only reconnect if session was not intentionally ended and close was unexpected
+        if (sessionActiveRef.current && event.code !== 1000) {
+          // Unexpected close - attempt to keep state visible but mark error
+          setVoiceState('error')
+          stopMicrophone()
+          clearSilenceTimer()
+          sessionActiveRef.current = false
+        } else {
+          setVoiceState('idle')
+          stopMicrophone()
+          clearSilenceTimer()
+          sessionActiveRef.current = false
+        }
       }
 
       ws.onerror = () => {
+        stopKeepalive()
         setVoiceState('error')
         stopMicrophone()
         clearSilenceTimer()
+        sessionActiveRef.current = false
       }
     } catch {
       setVoiceState('error')
+      sessionActiveRef.current = false
     }
-  }, [initPlaybackAudio, playAudioChunk, clearPlayback, startMicrophone, stopMicrophone, resetSilenceTimer, clearSilenceTimer, triggerBookingRedirect])
+  }, [initPlaybackAudio, playAudioChunk, clearPlayback, startMicrophone, stopMicrophone, resetSilenceTimer, clearSilenceTimer, startKeepalive, stopKeepalive, triggerBookingRedirect])
 
   // ── End Voice Session ──
   const endSession = useCallback(() => {
+    sessionActiveRef.current = false
+
     // Save transcript as a lead if we have messages
     if (transcript.length > 2) {
       const newLead: Lead = {
@@ -1498,27 +1566,34 @@ export default function Page() {
       setLeads((prev) => [newLead, ...prev])
     }
 
-    wsRef.current?.close()
-    wsRef.current = null
+    stopKeepalive()
+    if (wsRef.current) {
+      wsRef.current.close(1000, 'User ended session')
+      wsRef.current = null
+    }
     stopMicrophone()
-    audioContextRef.current?.close()
-    audioContextRef.current = null
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => {})
+      audioContextRef.current = null
+    }
     gainNodeRef.current = null
     nextPlayTimeRef.current = 0
     setVoiceState('idle')
     clearSilenceTimer()
-  }, [transcript, stopMicrophone, clearSilenceTimer])
+  }, [transcript, stopMicrophone, clearSilenceTimer, stopKeepalive])
 
   // ── Cleanup on unmount ──
   useEffect(() => {
     return () => {
+      sessionActiveRef.current = false
       wsRef.current?.close()
       stopMicrophone()
-      audioContextRef.current?.close()
+      audioContextRef.current?.close().catch(() => {})
       clearSilenceTimer()
+      stopKeepalive()
       if (bookingTimerRef.current) clearInterval(bookingTimerRef.current)
     }
-  }, [stopMicrophone, clearSilenceTimer])
+  }, [stopMicrophone, clearSilenceTimer, stopKeepalive])
 
   // ── Toggle mute ──
   const toggleMute = useCallback(() => {
@@ -1577,10 +1652,11 @@ export default function Page() {
           }}
         />
 
-        {/* Background gradient effect */}
+        {/* Background gradient effect - luxury warm tones */}
         <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-accent/4 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/3 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/2 rounded-full blur-[120px]" />
         </div>
 
         {/* Top bar */}
@@ -1596,7 +1672,6 @@ export default function Page() {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Sample Data Toggle */}
             <div className="flex items-center gap-2">
               <Label htmlFor="sample-toggle" className="text-xs text-muted-foreground cursor-pointer">
                 Sample Data
@@ -1608,7 +1683,6 @@ export default function Page() {
               />
             </div>
 
-            {/* View Toggle */}
             <Button
               variant="ghost"
               size="icon"
@@ -1633,7 +1707,6 @@ export default function Page() {
               visible={notification.visible}
             />
 
-            {/* Brand heading */}
             <div className="text-center mb-4">
               <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-1" style={{ letterSpacing: '-0.01em' }}>
                 Voice Consultant
@@ -1643,7 +1716,6 @@ export default function Page() {
               </p>
             </div>
 
-            {/* Voice Orb */}
             <VoiceOrb
               state={voiceState}
               isMuted={isMuted}
@@ -1652,20 +1724,16 @@ export default function Page() {
               onEnd={endSession}
             />
 
-            {/* Status Badge */}
             <StatusBadge state={voiceState} />
 
-            {/* Silence Cue */}
             <SilenceCue visible={showSilenceCue && voiceState === 'listening'} />
 
-            {/* Transcript */}
             <TranscriptPanel
               messages={showSampleData ? SAMPLE_LEADS[0].conversationTranscript : transcript}
               isOpen={showTranscript}
               onToggle={() => setShowTranscript((p) => !p)}
             />
 
-            {/* Agent Info */}
             <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-72">
               <Card className="border-border/30 bg-card/60 backdrop-blur-sm">
                 <CardContent className="p-3 flex items-center gap-3">
@@ -1708,35 +1776,33 @@ export default function Page() {
               </Button>
             </div>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatCard
                 label="Total Leads"
                 value={stats.total}
                 icon={<FiUsers className="w-5 h-5" />}
-                accentColor="hsl(220, 70%, 50%)"
+                accentColor="hsl(38, 65%, 52%)"
               />
               <StatCard
                 label="This Week"
                 value={stats.thisWeek}
                 icon={<FiTrendingUp className="w-5 h-5" />}
-                accentColor="hsl(160, 60%, 45%)"
+                accentColor="hsl(160, 40%, 45%)"
               />
               <StatCard
                 label="Avg Budget"
                 value={stats.avgBudget > 0 ? `$${stats.avgBudget.toLocaleString()}` : '$0'}
                 icon={<FiDollarSign className="w-5 h-5" />}
-                accentColor="hsl(30, 80%, 55%)"
+                accentColor="hsl(20, 70%, 55%)"
               />
               <StatCard
                 label="Conversion"
                 value={`${stats.conversionRate}%`}
                 icon={<FiTarget className="w-5 h-5" />}
-                accentColor="hsl(280, 60%, 55%)"
+                accentColor="hsl(280, 45%, 55%)"
               />
             </div>
 
-            {/* Filters */}
             <FilterBar
               projectTypeFilter={projectTypeFilter}
               setProjectTypeFilter={setProjectTypeFilter}
@@ -1747,7 +1813,6 @@ export default function Page() {
               onReset={resetFilters}
             />
 
-            {/* Leads Table */}
             <LeadsTable
               leads={filteredLeads}
               onSelectLead={(lead) => {
@@ -1756,14 +1821,12 @@ export default function Page() {
               }}
             />
 
-            {/* Lead Detail Sheet */}
             <LeadDetailSheet
               lead={selectedLead}
               open={sheetOpen}
               onClose={() => setSheetOpen(false)}
             />
 
-            {/* Agent Info Panel */}
             <Card className="border-border/30 bg-card/60 backdrop-blur-sm mt-6">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
