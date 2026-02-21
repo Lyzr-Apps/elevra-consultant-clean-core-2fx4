@@ -1,0 +1,30 @@
+{
+  "agents": [
+    {
+      "agent_id": "699943f2a3f97c34732baeba",
+      "agent_name": "Elevra AI Voice Consultant",
+      "agent_type": "voice",
+      "node_id": "voice_consultant_agent",
+      "voice_config": {
+        "initiator": "human",
+        "message": "",
+        "language": "English",
+        "voice": "sage"
+      },
+      "tool_configs": [
+        {
+          "tool_name": "gmail",
+          "tool_source": "composio",
+          "action_names": ["GMAIL_SEND_EMAIL"]
+        }
+      ],
+      "provider": "OpenAI",
+      "model": "gpt-4.1",
+      "temperature": 0.4,
+      "top_p": 0.95,
+      "response_schema_file": "response_schemas/elevra_ai_voice_consultant_response.json"
+    }
+  ],
+  "workflow_file": "workflow.json",
+  "created_at": "2026-02-21"
+}

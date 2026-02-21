@@ -1,0 +1,8 @@
+{
+  "agent_name": "Elevra AI Voice Consultant",
+  "agent_id": "699943f2a3f97c34732baeba",
+  "description": "Conducts structured voice-based lead qualification conversations following Elevra AI's consultation flow. Greets visitors, identifies business type, project needs, budget, timeline, and features. Collects full name, email, and phone. Summarizes requirements. Handles returning users by referencing injected prior conversation context. Gracefully exits if user is not ready. Maintains premium, consultative tone throughout.",
+  "agent_type": "voice",
+  "accessor": "websocket",
+  "auto_generated": true
+}

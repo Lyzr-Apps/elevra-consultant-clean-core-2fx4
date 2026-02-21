@@ -1,0 +1,32 @@
+{
+  "nodes": [
+    {
+      "id": "input_node",
+      "type": "Input",
+      "label": "Website Page Load",
+      "nodeCategory": "input"
+    },
+    {
+      "id": "voice_consultant_agent",
+      "type": "Agent",
+      "label": "Elevra AI Voice Consultant",
+      "nodeCategory": "agent"
+    },
+    {
+      "id": "output_node",
+      "type": "Output",
+      "label": "Conversation Output",
+      "nodeCategory": "end"
+    }
+  ],
+  "edges": [
+    {
+      "source": "input_node",
+      "target": "voice_consultant_agent"
+    },
+    {
+      "source": "voice_consultant_agent",
+      "target": "output_node"
+    }
+  ]
+}
